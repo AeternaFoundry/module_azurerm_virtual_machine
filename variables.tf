@@ -223,6 +223,22 @@ EOT
   validation {
     condition = alltrue([
       for k, v in var.virtual_machines : (
+        v.storage_os_disk.disk_size_gb == null || (v.storage_os_disk.disk_size_gb >= 0 && v.storage_os_disk.disk_size_gb <= 32767)
+      )
+    ])
+    error_message = "must be between 0 and 32767"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.virtual_machines : (
+        v.storage_data_disk == null || alltrue([for item in v.storage_data_disk : (item.disk_size_gb == null || (item.disk_size_gb >= 0 && item.disk_size_gb <= 32767))])
+      )
+    ])
+    error_message = "must be between 0 and 32767"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.virtual_machines : (
         v.os_profile_windows_config == null || (v.os_profile_windows_config.winrm == null || alltrue([for item in v.os_profile_windows_config.winrm : (contains(["HTTP", "HTTPS"], item.protocol))]))
       )
     ])
@@ -268,6 +284,6 @@ EOT
     ])
     error_message = "[from tags.Validate: invalid when len(value) > 50]"
   }
-  # Note: 14 additional provider-side validators are enforced at apply time but not mirrored as validation{} blocks here (bespoke or non-mechanically-translatable).
+  # Note: 12 additional provider-side validators are enforced at apply time but not mirrored as validation{} blocks here (bespoke or non-mechanically-translatable).
 }
 
